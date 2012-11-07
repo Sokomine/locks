@@ -6,7 +6,7 @@ minetest.register_privilege("openlocks", { description = "allows to open/use all
 minetest.register_privilege("diglocks",  { description = "allows to open/use and dig up all locked objects", give_to_singleplayer = false});
 
 -- initializes a lock (that is: prepare the metadata so that it can store data)
---  default_formspec is the formspec that will be used on right click; the input field for the commands will be added
+--  default_formspec is the formspec that will be used on right click; the input field for the commands has to exist 
 -- Call this in on_construct in register_node. Excample:
 --        on_construct = function(pos)
 --              locks:lock_init( pos, "" );
@@ -35,20 +35,60 @@ function locks:lock_init( pos, default_formspec )
    meta:set_string("password","");
    -- the last player who entered the right password (to save space this is not a list)
    meta:set_string("pw_user","");
-   -- this formspec is presented on right-click when the user has access
-   meta:set_string("default_formspec",default_formspec);
-   -- just to be sure...
+   -- this formspec is presented on right-click for every user
    meta:set_string("formspec",        default_formspec);
 end
+
+
+-- returns the information stored in the metadata strings (like owner etc.)
+function locks:get_lockdata( pos )
+   if( pos == nil ) then
+      return;
+   end
+ 
+   local meta = minetest.env:get_meta(pos);
+   if( meta == nil) then
+      return;
+   end
+
+   return{ infotext      = (meta:get_string( "infotext" ) or ""),
+           owner         = (meta:get_string( "owner"    ) or ""),
+           allowed_users = (meta:get_string( "allowed_users" ) or ""),
+           password      = (meta:get_string( "password"      ) or ""),
+           pw_user       = (meta:get_string( "w_user"        ) or ""),
+           formspec      = (meta:get_string( "formspec"      ) or "")
+   };
+end
+
+
+-- sets all the metadata the look needs (used e.g. in doors)
+function locks:set_lockdata( pos, data )
+   if( pos == nil ) then
+      return;
+   end
+ 
+   local meta = minetest.env:get_meta(pos);
+   if( meta == nil) then
+      return;
+   end
+   
+   meta:set_string("infotext",     (data.infotext      or ""));
+   meta:set_string("owner",        (data.owner         or ""));
+   meta:set_string("allowed_users",(data.allowed_users or ""));
+   meta:set_string("password",     (data.password      or ""));
+   meta:set_string("pw_user",      (data.pw_user       or ""));
+   meta:set_string("formspec",     (data.formspec      or ""));
+end
+
 
 
 
 -- Set the owner of the locked object.
 -- Call this in after_place_node in register_node. Example:
 --        after_place_node = function(pos, placer)
---                locks:lock_set_owner( pos, placer );
+--                locks:lock_set_owner( pos, placer, "Shared locked object" );
 --        end,
-function locks:lock_set_owner( pos, player_or_name )
+function locks:lock_set_owner( pos, player_or_name, description )
 
    if( pos == nil or player_or_name == nil ) then
       print( "Error: [locks] Missing/wrong parameters to lock_set_owner");
@@ -67,8 +107,8 @@ function locks:lock_set_owner( pos, player_or_name )
    end
 
    meta:set_string("owner", player_or_name or "");
-   -- TODO: not very convincing...has to carry the name of the object
-   meta:set_string("infotext", "Locked object (owned by "..meta:get_string("owner")..")");
+   -- add the name of the owner to the description
+   meta:set_string("infotext", ( description or "Shared lockecd object" ).." (owned by "..meta:get_string("owner")..")");
 end
 
 
@@ -124,29 +164,60 @@ function locks:lock_allow_use( pos, player )
       return false;
    end
 
-   -- TODO: the player has to have a key (when allowed to dig) or else a keychain for this to be actually allowed
+   local name = player:get_player_name();
+   local meta = minetest.env:get_meta(pos);
 
+   -- the player has to have a key or a keychain to open his own shared locked objects
+   if( name == meta:get_string("owner")) then      
+
+      if(     not( player:get_inventory():contains_item("main","locks:keychain 1"))
+          and not( player:get_inventory():contains_item("main","locks:key 1"))) then
+          minetest.chat_send_player( name, "You do not have a key or a keychain. Without that you can't use your shared locked objects!");
+          return false;
+      end
+
+   -- the player has to have a keychain to open shared locked objects of other players
+   else 
+
+      if( not( player:get_inventory():contains_item("main","locks:keychain 1"))) then
+         minetest.chat_send_player(name, "You do not have a keychain. Without that you can't open shared locked objects of other players!");
+         return false;
+      end
+   end
+      
    -- if the user would even be allowed to dig this node up, using the node is allowed as well 
    if( locks:lock_allow_dig( pos, player )) then
       return true;
    end
 
-   local name = player:get_player_name();
+
+   if( meta == nil ) then
+      minetest.chat_send_player( name, "Error: Could not access metadata of this shared locked object.");
+      return false;
+   end
 
    -- players with openlocks priv can open locked objects 
    if( minetest.check_player_privs(name, {openlocks=true})) then
-     return true;
+      return true;
    end
 
    -- the player might be specificly allowed to use this object through allowed_users
    local liste = meta:get_string("allowed_users"):split( "," );
    for i in ipairs( liste ) do
+ 
       if( liste[i] == name ) then
          return true;
       end
+
+      -- the player might member of a playergroup that is allowed to use this object
+      if( liste[i]:sub(1,1) == ":"
+        and playergroups ~= nil
+        and playergroups:is_group_member( meta:get_string("owner"), liste[i]:sub(2), name )) then
+         return true;
+      end
+
    end
 
-   -- TODO: the player might be in a group of players allowed to use this (also listed in allowed_users)
 
    -- the player may have entered the right password
    if( name == meta:get_string("pw_user")) then
@@ -154,7 +225,7 @@ function locks:lock_allow_use( pos, player )
    end
 
    -- the lock may have a password set. If this is the case then ask the user for it
-   if( meta:get_string( "password" ) and meta:get_sring( "password" ) ~= "" ) then
+   if( meta:get_string( "password" ) and meta:get_string( "password" ) ~= "" ) then
       minetest.chat_send_player(name, "Access denied. Right-click and enter password first!");
       return false;
    end
@@ -184,8 +255,8 @@ function locks:lock_handle_input( pos, formname, fields, player )
    end
 
    -- is this input the lock is supposed to handle?
-   if(   not( fields.locks_sent_input )
-      or not( fields.locks_sent_lock_command )
+   if(   not( fields.locks_sent_lock_command )
+--    or not( fields.locks_sent_input )
       or fields.locks_sent_lock_command == "" ) then
      return;
    end
@@ -218,12 +289,23 @@ function locks:lock_handle_input( pos, formname, fields, player )
       return;
    end -- of /help
 
+   -- sanitize player input
+   if( fields.locks_sent_lock_command:find("[^%a%d%s_\- \/\:]")) then
+      minetest.chat_send_player(name, "Input contains unsupported characters. Allowed: a-z, A-Z, 0-9, _, -, :.");
+      return;
+   end
+    
+   if( #fields.locks_sent_lock_command > 60) then
+      minetest.chat_send_player(name, "Input too long. Only up to 80 characters supported.");
+      return;
+   end
+   
 
    -- other players can only try to input the correct password
    if( name ~= meta:get_string( "owner" )) then 
 
       -- no need to bother with trying other PWs if none is set...
-      if( meta.get_string("password")=="" ) then
+      if( meta:get_string("password")=="" ) then
           minetest.chat_send_player(name, "There is no password set. Access denied.");
           return;
       end
@@ -330,7 +412,6 @@ function locks:lock_handle_input( pos, formname, fields, player )
       return;
    end
 
-   -- TODO: check if the player exists....
 
    if( help[1]=="/add" ) then
 
@@ -339,9 +420,46 @@ function locks:lock_handle_input( pos, formname, fields, player )
          return;
       end
 
+      if( name == help[2] ) then
+         minetest.chat_send_player(name, "You are already owner of this object.");
+         return;
+      end
+        
+      -- the player might try to add a playergroup
+      if( help[2]:sub(1,1) == ":" ) then
+          
+         if( not( playergroups )) then
+            minetest.chat_send_player(name, "Sorry, this server does not support playergroups.");
+            return;
+         end
+
+         if( #help[2]<2 ) then
+            minetest.chat_send_player(name, "Please specify the name of the playergroup you want to add!");
+            return;
+         end
+
+         if( not( playergroups:is_playergroup(meta:get_string("owner"), help[2]:sub(2) ))) then
+            minetest.chat_send_player(name, "You do not have a playergroup named \""..tostring( help[2]:sub(2)).."\".");
+            return;
+         end
+ 
+      else
+            
+         -- check if the player exists
+         local privs = minetest.get_player_privs( help[2] );
+         if( not( privs ) or not( privs.interact )) then
+            minetest.chat_send_player(name, "Player \""..help[2].."\" not found or has no interact privs.");
+            return;
+         end
+      end
+        
       meta:set_string( "allowed_users", meta:get_string("allowed_users")..","..help[2] );
 
-      minetest.chat_send_player(name, help[2].." may now use/access this locked object.");
+      if( help[2]:sub(1,1) == ":" ) then
+         minetest.chat_send_player(name, "All members of your playergroup "..tostring(help[2]:sub(2)).." may now use/access this locked object.");
+      else
+         minetest.chat_send_player(name, help[2].." may now use/access this locked object.");
+      end
       return;
    end
 
@@ -349,10 +467,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
    if( help[1]=="/del" ) then
 
       userlist  = meta:get_string("allowed_users"):split( ","..help[2] );
-      if( userlist[2]==nil ) then
-         userlist[2]="";
-      end 
-      meta:set_string( "allowed_users", userlist[1]..userlist[2] );
+      meta:set_string( "allowed_users", ( userlist[1] or "" )..(userlist[2] or "" ));
       
       minetest.chat_send_player(name, "Access for player \""..tostring(help[2]).."\" has been revoked.");
       return;
@@ -363,146 +478,56 @@ end
 
 
 
--- a chest
-minetest.register_node("locks:locked_shared_chest", {
-       description = "Locked shared chest",
-        tiles = {"default_chest_top.png", "default_chest_top.png", "default_chest_side.png",
-                "default_chest_side.png", "default_chest_side.png", "default_chest_front.png"},
-        paramtype2 = "facedir",
-        groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2},
-        legacy_facedir_simple = true,
-
-        on_construct = function(pos)
-                local meta = minetest.env:get_meta(pos)
-                -- prepare the lock of the chest
-                locks:lock_init( pos, 
-                                "size[8,10]"..
---                                "field[0.5,0.2;8,1.0;locks_sent_lock_command;Locked chest. Type password, command or /help for help:;]"..
---                                "button_exit[3,0.8;2,1.0;locks_sent_input;Proceed]"..
-                                "list[current_name;main;0,0;8,4;]"..
-                                "list[current_player;main;0,5;8,4;]"..
-                                "field[0.3,9.6;6,0.7;locks_sent_lock_command;Locked chest. Type /help for help:;]"..
-                                "button_exit[6.3,9.2;1.7,0.7;locks_sent_input;Proceed]" );
---                                "size[8,9]"..
---                                "list[current_name;main;0,0;8,4;]"..
---                                "list[current_player;main;0,5;8,4;]");
-                local inv = meta:get_inventory()
-                inv:set_size("main", 8*4)
-        end,
-
-        after_place_node = function(pos, placer)
-                locks:lock_set_owner( pos, placer );
-        end,
+-- craftitem; that can be used to craft shared locked objects
+minetest.register_craftitem("locks:lock", {
+        description = "Lock to lock and share objects",
+        image = "locks_lock16.png",
+});
 
 
-        can_dig = function(pos,player)
-               
-                if( not(locks:lock_allow_dig( pos, player ))) then
-                   return false;
-                end
-                local meta = minetest.env:get_meta(pos);
-                local inv = meta:get_inventory()
-                return inv:is_empty("main")
-        end,
-
-        on_receive_fields = function(pos, formname, fields, sender)
-                locks:lock_handle_input( pos, formname, fields, sender );
-        end,
- 
- 
-
-        allow_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-                if( not( locks:lock_allow_use( pos, player ))) then
-                   return 0;
-                end
-                return count;
-        end,
-        allow_metadata_inventory_put = function(pos, listname, index, stack, player)
-                if( not( locks:lock_allow_use( pos, player ))) then
-                   return 0;
-                end
-                return stack:get_count()
-        end,
-        allow_metadata_inventory_take = function(pos, listname, index, stack, player)
-                if( not( locks:lock_allow_use( pos, player ))) then
-                   return 0;
-                end
-                return stack:get_count()
-        end,
-        on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
-                minetest.log("action", player:get_player_name()..
-                                " moves stuff in locked shared chest at "..minetest.pos_to_string(pos))
-        end,
-        on_metadata_inventory_put = function(pos, listname, index, stack, player)
-                minetest.log("action", player:get_player_name()..
-                                " moves stuff to locked shared chest at "..minetest.pos_to_string(pos))
-        end,
-        on_metadata_inventory_take = function(pos, listname, index, stack, player)
-                minetest.log("action", player:get_player_name()..
-                                " takes stuff from locked shared chest at "..minetest.pos_to_string(pos))
-        end,
+minetest.register_craft({
+        output = "locks:lock 2",
+        recipe = {
+                 {'default:steel_ingot', 'default:steel_ingot','default:steel_ingot'},
+                 {'default:steel_ingot', '',                   'default:steel_ingot'},
+                 {'',                    'default:steel_ingot',''},
+                }
+        });
 
 
-})
+-- a key allowes to open your own shared locked objects
+minetest.register_craftitem("locks:key", {
+        description = "Key to open your own shared locked objects",
+        image = "locks_key32.png",
+});
+
+minetest.register_craft({
+        output = "locks:key",
+        recipe = {
+                 {'',                    'default:steel_ingot',''},
+                 {'',                    'default:stick',      ''},
+                 {'',                    '',                   ''},
+                }
+        });
 
 
--- a sign
-minetest.register_node("locks:locked_shared_sign_wall", {
-        description = "Locked shared sign",
-        drawtype = "signlike",
-        tiles = {"default_sign_wall.png"},
-        inventory_image = "default_sign_wall.png",
-        wield_image = "default_sign_wall.png",
-        paramtype = "light",
-        paramtype2 = "wallmounted",
-        sunlight_propagates = true,
-        walkable = false,
-        selection_box = {
-                type = "wallmounted",
-                --wall_top = <default>
-                --wall_bottom = <default>
-                --wall_side = <default>
-        },
-        groups = {choppy=2,dig_immediate=2},
-        legacy_wallmounted = true,
+
+-- in order to open shared locked objects of other players, a keychain is needed (plus the owner has to admit it via /add playername or through /set password)
+minetest.register_craftitem("locks:keychain", {
+        description = "Keychain to open shared locked objects of others",
+        image = "locks_keychain32.png",
+});
+
+minetest.register_craft({
+        output = "locks:keychain",
+        recipe = {
+                 {'',                    'default:steel_ingot', '' },
+                 {'locks:key',           'locks:key',           'locks:key'},
+                }
+        });
+
+dofile(minetest.get_modpath("locks").."/shared_locked_chest.lua");
+dofile(minetest.get_modpath("locks").."/shared_locked_sign_wall.lua");
+dofile(minetest.get_modpath("locks").."/shared_locked_xdoors2.lua");
 
 
-        on_construct = function(pos)
-                local meta = minetest.env:get_meta(pos)
-                -- prepare the lock of the sign
-                locks:lock_init( pos, 
-                                "size[8,4]"..
-                                "field[0.3,0.6;6,0.7;text;Text:;]"..
-                                "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
-                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]" );
-        end,
-
-        after_place_node = function(pos, placer)
-                locks:lock_set_owner( pos, placer );
-        end,
-
-
-        can_dig = function(pos,player)
-                return locks:lock_allow_dig( pos, player );
-        end,
-
-        on_receive_fields = function(pos, formname, fields, sender)
-
-                -- if the user already has the right to use this and did input text
-                if( fields.text and locks:lock_allow_use( pos, sender )) then
-
-                    --print("Sign at "..minetest.pos_to_string(pos).." got "..dump(fields))
-                    local meta = minetest.env:get_meta(pos)
-                    fields.text = fields.text or "";
-                    print((sender:get_player_name() or "").." wrote \""..fields.text..
-                                "\" to sign at "..minetest.pos_to_string(pos));
-                    meta:set_string("text", fields.text.." ["..sender:get_player_name().."]");
-                    meta:set_string("infotext", '"'..fields.text..'"'.." ["..sender:get_player_name().."]");
-
-                -- a command for the lock?
-                else
-                   locks:lock_handle_input( pos, formname, fields, sender );
-                end
-  
-        end,
- });
