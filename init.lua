@@ -290,7 +290,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
    end -- of /help
 
    -- sanitize player input
-   if( fields.locks_sent_lock_command:find("[^%a%d%s_\- \/\:]")) then
+   if( fields.locks_sent_lock_command:find("[^%a%d%s%_%-%/%:]")) then --%a is all letters %d is all diggits %s is all space characters
       minetest.chat_send_player(name, "Input contains unsupported characters. Allowed: a-z, A-Z, 0-9, _, -, :.");
       return;
    end
