@@ -3,6 +3,7 @@ This Mod for Minetest adds objects that can be locked and shared.
 It is written so that other objects/mods can easily use the functions provided here.
 
 Comes with modified chest, sign and xyz' xdoor2 as sample objects.
+New: Furnaces added.
 For the (unmodified) xdoors2, see http://minetest.net/forum/viewtopic.php?id=2757. Chest and sign take their textures out of default.
 The textures (lock, key and keychain) have been provided by Addi. Please consult textures/licence.txt.
 The code of the lock mod has been written by Sokomine.
@@ -27,6 +28,7 @@ If you do not want any of the objects chest, sign and/or door, just remove the c
 dofile(minetest.get_modpath("locks").."/shared_locked_chest.lua");
 dofile(minetest.get_modpath("locks").."/shared_locked_sign_wall.lua");
 dofile(minetest.get_modpath("locks").."/shared_locked_xdoors2.lua");
+dofile(minetest.get_modpath("locks").."/shared_locked_furnace.lua");
 
 I hope this mod will be helpful.
 
