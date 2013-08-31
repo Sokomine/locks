@@ -24,6 +24,7 @@
 -- Version 1.1
 
 -- Changelog: 
+-- 31.08.2013 * changed receipe for key to avoid crafting conflickt with screwdriver
 -- 10.07.2013 * removed a potential bug (now uses string:gmatch)
 --            * added shared locked furnaces
 
@@ -533,9 +534,8 @@ minetest.register_craftitem("locks:key", {
 minetest.register_craft({
         output = "locks:key",
         recipe = {
-                 {'',                    'default:steel_ingot',''},
                  {'',                    'default:stick',      ''},
-                 {'',                    '',                   ''},
+                 {'',                    'default:steel_ingot',''},
                 }
         });
 
