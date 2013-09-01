@@ -21,9 +21,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 1.1
+-- Version 1.15
 
 -- Changelog: 
+-- 01.09.2013 * fixed bug in input sanitization
 -- 31.08.2013 * changed receipe for key to avoid crafting conflickt with screwdriver
 -- 10.07.2013 * removed a potential bug (now uses string:gmatch)
 --            * added shared locked furnaces
@@ -320,7 +321,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
    end -- of /help
 
    -- sanitize player input
-   if( fields.locks_sent_lock_command:gmatch("[^%a%d%s_%- %/%:]")) then
+   if( fields.locks_sent_lock_command:match("[^%a%d%s_%- /%:]")) then
       minetest.chat_send_player(name, "Input contains unsupported characters. Allowed: a-z, A-Z, 0-9, _, -, :.");
       return;
    end
