@@ -21,9 +21,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 1.15
+-- Version 1.16
 
 -- Changelog: 
+-- 17.12.2013 * aborting input with ESC is possible again
 -- 01.09.2013 * fixed bug in input sanitization
 -- 31.08.2013 * changed receipe for key to avoid crafting conflickt with screwdriver
 -- 10.07.2013 * removed a potential bug (now uses string:gmatch)
@@ -287,6 +288,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
 
    -- is this input the lock is supposed to handle?
    if(   not( fields.locks_sent_lock_command )
+      or (fields.quit and fields.quit==true)
 --    or not( fields.locks_sent_input )
       or fields.locks_sent_lock_command == "" ) then
      return;

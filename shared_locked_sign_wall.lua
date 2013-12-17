@@ -1,4 +1,6 @@
 
+-- allow aborting with ESC in newer Versions of MT again
+
 -- a sign
 minetest.register_node("locks:shared_locked_sign_wall", {
         description = "Shared locked sign",
@@ -40,6 +42,11 @@ minetest.register_node("locks:shared_locked_sign_wall", {
         end,
 
         on_receive_fields = function(pos, formname, fields, sender)
+	
+		-- abort if no input has been sent
+		if( fields.quit ) then
+		    return;
+                end
 
                 -- if the user already has the right to use this and did input text
                 if(     fields.text 
