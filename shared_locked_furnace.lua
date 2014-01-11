@@ -3,6 +3,66 @@
 -- containing only the furnace and adopted slightly for my locks mod
 
 
+-- 09.01.13 Added support for pipeworks.
+
+
+locks.furnace_add = {};
+locks.furnace_add_tiles_normal = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
+		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front.png"};
+locks.furnace_add.tiles_active = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
+		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front_active.png"};
+locks.furnace_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2};
+locks.furnace_add.tube   = {};
+
+-- additional/changed definitions for pipeworks;
+-- taken from pipeworks/compat.lua
+if( locks.pipeworks_enabled ) then
+
+   locks.furnace_add.tiles_normal = {
+	"default_furnace_top.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_bottom.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_front.png^pipeworks_tube_connection_stony.png" };
+
+
+   locks.furnace_add.tiles_active = {
+	"default_furnace_top.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_bottom.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
+	"default_furnace_front_active.png^pipeworks_tube_connection_stony.png" };
+
+
+   locks.furnace_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2,
+	tubedevice = 1, tubedevice_receiver = 1 };
+   locks.furnace_add.tube = {
+		insert_object = function(pos, node, stack, direction)
+			local meta = minetest.env:get_meta(pos)
+			local inv = meta:get_inventory()
+			if direction.y == 1 then
+				return inv:add_item("fuel",stack)
+			else
+				return inv:add_item("src",stack)
+			end
+		end,
+		can_insert = function(pos, node, stack, direction)
+			local meta = minetest.env:get_meta(pos)
+			local inv = meta:get_inventory()
+			if direction.y == 1 then
+				return inv:room_for_item("fuel", stack)
+			else
+				return inv:room_for_item("src", stack)
+			end
+		end,
+		input_inventory = "dst",
+		connect_sides = {left=1, right=1, back=1, front=1, bottom=1, top=1}
+	};
+end
+
+
 function locks.get_furnace_active_formspec(pos, percent)
 	local formspec =
 		"size[8,9]"..
@@ -30,11 +90,14 @@ locks.furnace_inactive_formspec =
 
 minetest.register_node("locks:shared_locked_furnace", {
 	description = "Shared locked furnace",
-	tiles = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
-		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front.png"},
 	paramtype2 = "facedir",
 	groups = {cracky=2},
 	legacy_facedir_simple = true,
+
+	tiles      = locks.furnace_add.tiles_normal,
+        groups     = locks.furnace_add.groups,
+	tube       = locks.furnace_add.tube,
+
 --	sounds = default.node_sound_stone_defaults(),
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
@@ -45,9 +108,19 @@ minetest.register_node("locks:shared_locked_furnace", {
 		inv:set_size("src", 1)
 		inv:set_size("dst", 4)
 	end,
-        after_place_node = function(pos, placer)
-                locks:lock_set_owner( pos, placer, "Shared locked chest" );
-        end,
+
+	after_place_node = function(pos, placer)
+                if( locks.pipeworks_enabled ) then              
+		   pipeworks.scan_for_tube_objects(pos)
+                end
+                locks:lock_set_owner( pos, placer, "Shared locked furnace" );
+	end,
+	after_dig_node = function(pos)
+                if( locks.pipeworks_enabled ) then              
+		   pipeworks.scan_for_tube_objects(pos)
+                end
+	end,
+
 	can_dig = function(pos,player)
                 if( not(locks:lock_allow_dig( pos, player ))) then
                    return false;
@@ -119,13 +192,16 @@ minetest.register_node("locks:shared_locked_furnace", {
 
 minetest.register_node("locks:shared_locked_furnace_active", {
 	description = "Furnace",
-	tiles = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
-		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front_active.png"},
 	paramtype2 = "facedir",
 	light_source = 8,
 	drop = "locks:shared_locked_furnace",
 	groups = {cracky=2, not_in_creative_inventory=1},
 	legacy_facedir_simple = true,
+
+	tiles      = locks.furnace_add.tiles_active,
+        groups     = locks.furnace_add.groups,
+	tube       = locks.furnace_add.tube,
+
 --	sounds = default.node_sound_stone_defaults(),
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
@@ -151,6 +227,19 @@ minetest.register_node("locks:shared_locked_furnace_active", {
 		end
 		return true
 	end,
+
+	after_place_node = function(pos, placer)
+                if( locks.pipeworks_enabled ) then              
+		   pipeworks.scan_for_tube_objects(pos)
+                end
+                locks:lock_set_owner( pos, placer, "Shared locked furnace (active)" );
+	end,
+	after_dig_node = function(pos)
+                if( locks.pipeworks_enabled ) then              
+		   pipeworks.scan_for_tube_objects(pos)
+                end
+        end,
+
         on_receive_fields = function(pos, formname, fields, sender)
                 locks:lock_handle_input( pos, formname, fields, sender );
         end,
@@ -321,3 +410,5 @@ minetest.register_craft({
 })
 
 print( "[Mod] locks: loading locks:shared_locked_furnace");
+
+

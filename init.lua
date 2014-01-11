@@ -21,9 +21,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 1.16
+-- Version 1.20
 
 -- Changelog: 
+-- 10.01.2013 * Added command to toggle for pipeworks output
+--            * Added pipeworks support for chests and furnace.
 -- 17.12.2013 * aborting input with ESC is possible again
 -- 01.09.2013 * fixed bug in input sanitization
 -- 31.08.2013 * changed receipe for key to avoid crafting conflickt with screwdriver
@@ -36,6 +38,13 @@ locks = {};
 
 minetest.register_privilege("openlocks", { description = "allows to open/use all locked objects", give_to_singleplayer = false});
 minetest.register_privilege("diglocks",  { description = "allows to open/use and dig up all locked objects", give_to_singleplayer = false});
+
+
+locks.pipeworks_enabled = false;
+
+if( minetest.get_modpath("pipeworks") ~= nil ) then
+   locks.pipeworks_enabled = true;
+end
 
 -- initializes a lock (that is: prepare the metadata so that it can store data)
 --  default_formspec is the formspec that will be used on right click; the input field for the commands has to exist 
@@ -69,6 +78,8 @@ function locks:lock_init( pos, default_formspec )
    meta:set_string("pw_user","");
    -- this formspec is presented on right-click for every user
    meta:set_string("formspec",        default_formspec);
+   -- by default, do not send output to pipework tubes
+   meta:set_int(   "allow_pipeworks", 0 );
 end
 
 
@@ -199,6 +210,15 @@ function locks:lock_allow_use( pos, player )
    local name = player:get_player_name();
    local meta = minetest.env:get_meta(pos);
 
+   -- pipeworks sends a special username
+   if( name == ':pipeworks' ) then
+      if( meta:get_int( 'allow_pipeworks' ) == 1 ) then
+         return true;
+      else
+         return false;
+      end
+   end
+
    -- the player has to have a key or a keychain to open his own shared locked objects
    if( name == meta:get_string("owner")) then      
 
@@ -288,7 +308,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
 
    -- is this input the lock is supposed to handle?
    if(   not( fields.locks_sent_lock_command )
-      or (fields.quit and fields.quit==true)
+      or (fields.quit and (fields.quit==true or fields.quit=='true'))
 --    or not( fields.locks_sent_input )
       or fields.locks_sent_lock_command == "" ) then
      return;
@@ -304,7 +324,8 @@ function locks:lock_handle_input( pos, formname, fields, player )
             "  /add <name>     Player <name> can now unlock this object with any key.\n"..
             "  /del <name>     Player <name> can no longer use this object.\n"..
             "  /list           Shows a list of players who can use this object.\n"..
-            "  /set <password> Sets a password. Everyone who types that in can use the object.");
+            "  /set <password> Sets a password. Everyone who types that in can use the object.\n"..
+            "  /pipeworks      Toggles permission for pipeworks to take inventory out of the shared locked object.\n");
 
       else if( locks:lock_allow_use( pos, player )) then
          minetest.chat_send_player(name, "This locked object is owned by "..tostring( meta:get_string( "owner" ))..".\n"..
@@ -383,9 +404,32 @@ function locks:lock_handle_input( pos, formname, fields, player )
          txt = txt.."\nThe password for this lock is: \""..tostring( meta:get_string( "password" ).."\"");
       end
 
+      if( not( minetest.get_modpath("pipeworks") )) then
+         txt = txt.."\nThe pipeworks mod is not installed. Install it if you wish support for tubes.";
+      elseif( meta:get_int( "allow_pipeworks" ) == 1 ) then
+         txt = txt.."\nTubes from pipeworks may be used to extract items out of/add items to this shared locked object.";
+      else
+         txt = txt.."\nInput from tubes is accepted, but output to them is denied (default).";
+      end
+
       minetest.chat_send_player(name, txt );
       return;
    end -- of /list
+
+
+   -- toggle tube output on/off
+   if( fields.locks_sent_lock_command == "/pipeworks" ) then
+
+      if( meta:get_int('allow_pipeworks') == 1 ) then
+         meta:set_int('allow_pipeworks', 0 );
+         minetest.chat_send_player( name, 'Output to pipework tubes is now DISABLED (input is still acceped).');
+         return;
+      else
+         meta:set_int('allow_pipeworks', 1 );
+         minetest.chat_send_player( name, 'Output to pipework tubes is now ENABLED. Connected tubes may insert and remove items.');
+         return;
+      end
+   end
 
 --   -- all other commands take exactly one parameter
    local help = fields.locks_sent_lock_command:split( " " );
