@@ -7,10 +7,20 @@
 
 
 locks.furnace_add = {};
-locks.furnace_add_tiles_normal = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
+locks.furnace_add.tiles_normal = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
 		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front.png"};
 locks.furnace_add.tiles_active = {"default_furnace_top.png", "default_furnace_bottom.png", "default_furnace_side.png",
-		"default_furnace_side.png", "default_furnace_side.png", "default_furnace_front_active.png"};
+		"default_furnace_side.png", "default_furnace_side.png", --"default_furnace_front_active.png"};
+		{
+			image = "default_furnace_front_active.png",
+			backface_culling = false,
+			animation = {
+				type = "vertical_frames",
+				aspect_w = 16,
+				aspect_h = 16,
+				length = 1.5
+			},
+		}};
 locks.furnace_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2};
 locks.furnace_add.tube   = {};
 
@@ -24,7 +34,7 @@ if( locks.pipeworks_enabled ) then
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
-	"default_furnace_front.png^pipeworks_tube_connection_stony.png" };
+	"default_furnace_front.png" };
 
 
    locks.furnace_add.tiles_active = {
@@ -33,7 +43,17 @@ if( locks.pipeworks_enabled ) then
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
 	"default_furnace_side.png^pipeworks_tube_connection_stony.png",
-	"default_furnace_front_active.png^pipeworks_tube_connection_stony.png" };
+	{
+		image = "default_furnace_front_active.png",
+		backface_culling = false,
+		animation = {
+			type = "vertical_frames",
+			aspect_w = 16,
+			aspect_h = 16,
+			length = 1.5
+		},
+	}};
+--	"default_furnace_front_active.png" };
 
 
    locks.furnace_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2,

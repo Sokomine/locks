@@ -24,6 +24,7 @@
 -- Version 1.20
 
 -- Changelog: 
+-- 08.05.2014 * Changed animation of shared locked furnace (removed pipeworks overlay on front, changed to new animation type)
 -- 10.01.2013 * Added command to toggle for pipeworks output
 --            * Added pipeworks support for chests and furnace.
 -- 17.12.2013 * aborting input with ESC is possible again
