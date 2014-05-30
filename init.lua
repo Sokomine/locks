@@ -308,10 +308,10 @@ function locks:lock_handle_input( pos, formname, fields, player )
    end
 
    -- is this input the lock is supposed to handle?
-   if(   not( fields.locks_sent_lock_command )
-      or (fields.quit and (fields.quit==true or fields.quit=='true'))
+   if(  ( not( fields.locks_sent_lock_command )
+       or fields.locks_sent_lock_command == "" )
+      and (fields.quit and (fields.quit==true or fields.quit=='true'))) then
 --    or not( fields.locks_sent_input )
-      or fields.locks_sent_lock_command == "" ) then
      return;
    end
 
