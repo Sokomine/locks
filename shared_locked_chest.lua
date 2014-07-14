@@ -53,7 +53,7 @@ minetest.register_node("locks:shared_locked_chest", {
                                 "list[current_name;main;0,0;8,4;]"..
                                 "list[current_player;main;0,5;8,4;]"..
                                 "field[0.3,9.6;6,0.7;locks_sent_lock_command;Locked chest. Type /help for help:;]"..
-								"background[-0.5,-0.65;9,11.2;bg_chest.jpg]"..
+								"background[-0.5,-0.65;9,11.2;bg_shared_locked_chest.jpg]"..
                                 "button_exit[6.3,9.2;1.7,0.7;locks_sent_input;Proceed]" );
 --                                "size[8,9]"..
 --                                "list[current_name;main;0,0;8,4;]"..
