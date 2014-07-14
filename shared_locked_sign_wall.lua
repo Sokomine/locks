@@ -29,7 +29,8 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                                 "size[8,4]"..
                                 "field[0.3,0.6;6,0.7;text;Text:;]"..
                                 "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
-                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]" );
+                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]"..
+								"background[-0.5,-0.5;9,5;bg_shared_locked_sign.jpg]" );
         end,
 
         after_place_node = function(pos, placer)
