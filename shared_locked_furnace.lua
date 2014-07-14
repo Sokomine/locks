@@ -92,6 +92,7 @@ function locks.get_furnace_active_formspec(pos, percent)
 		"list[current_name;src;2,1;1,1;]"..
 		"list[current_name;dst;5,1;2,2;]"..
 		"list[current_player;main;0,5;8,4;]"..
+		"background[-0.5,-0.65;9,10.35;bg_furnace.jpg]"..
 
                                 "field[0.3,4.5;6,0.7;locks_sent_lock_command;Locked furnace. Type /help for help:;]"..
                                 "button_exit[6.3,4;1.7,0.7;locks_sent_input;Proceed]" ;
@@ -105,6 +106,7 @@ locks.furnace_inactive_formspec =
 	"list[current_name;src;2,1;1,1;]"..
 	"list[current_name;dst;5,1;2,2;]"..
 	"list[current_player;main;0,5;8,4;]"..
+	"background[-0.5,-0.65;9,10.35;bg_furnace.jpg]"..
                                 "field[0.3,4.5;6,0.7;locks_sent_lock_command;Locked furnace. Type /help for help:;]"..
                                 "button_exit[6.3,4;1.7,0.7;locks_sent_input;Proceed]" ;
 
