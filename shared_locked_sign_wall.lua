@@ -44,11 +44,6 @@ minetest.register_node("locks:shared_locked_sign_wall", {
 
         on_receive_fields = function(pos, formname, fields, sender)
 	
-		-- abort if no input has been sent
-		if( fields.quit ) then
-		    return;
-                end
-
                 -- if the user already has the right to use this and did input text
                 if(     fields.text 
                     and ( not(fields.locks_sent_lock_command) 
