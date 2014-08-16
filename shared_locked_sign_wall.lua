@@ -27,7 +27,7 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                 -- prepare the lock of the sign
                 locks:lock_init( pos, 
                                 "size[8,4]"..
-                                "field[0.3,0.6;6,0.7;text;Text:;]"..
+                                "field[0.3,0.6;6,0.7;text;Text:;${text}]"..
                                 "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
                                 "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]"..
 								"background[-0.5,-0.5;9,5;bg_shared_locked_sign.jpg]" );
@@ -55,7 +55,7 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                     fields.text = fields.text or "";
                     print((sender:get_player_name() or "").." wrote \""..fields.text..
                                 "\" to sign at "..minetest.pos_to_string(pos));
-                    meta:set_string("text", fields.text.." ["..sender:get_player_name().."]");
+                    meta:set_string("text", fields.text);
                     meta:set_string("infotext", '"'..fields.text..'"'.." ["..sender:get_player_name().."]");
 
                 -- a command for the lock?
