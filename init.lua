@@ -212,7 +212,7 @@ function locks:lock_allow_use( pos, player )
    local meta = minetest.env:get_meta(pos);
 
    -- pipeworks sends a special username
-   if( name == ':pipeworks' ) then
+   if( name == ':pipeworks' or (player.is_fake_player and player.is_fake_player==":pipeworks")) then
       if( meta:get_int( 'allow_pipeworks' ) == 1 ) then
          return true;
       else
