@@ -57,7 +57,7 @@ end
 
 for i = 1, 2 do
     minetest.register_node("locks:door_top_"..i, {
-        tile_images = {"xdoors2_side.png", "xdoors2_side.png", "xdoors2_top.png", "xdoors2_bottom.png", "xdoors2_top_"..(3 - i)..".png", "xdoors2_top_"..i..".png"},
+        tiles = {"xdoors2_side.png", "xdoors2_side.png", "xdoors2_top.png", "xdoors2_bottom.png", "xdoors2_top_"..(3 - i)..".png", "xdoors2_top_"..i..".png"},
         paramtype = "light",
         paramtype2 = "facedir",
         drawtype = "nodebox",
@@ -90,7 +90,7 @@ for i = 1, 2 do
         end
     })
     minetest.register_node("locks:door_bottom_"..i, {
-        tile_images = {"xdoors2_side.png", "xdoors2_side.png", "xdoors2_top.png", "xdoors2_bottom.png", "locks_xdoors2_bottom_"..(3 - i)..".png", "locks_xdoors2_bottom_"..i..".png"},
+        tiles = {"xdoors2_side.png", "xdoors2_side.png", "xdoors2_top.png", "xdoors2_bottom.png", "locks_xdoors2_bottom_"..(3 - i)..".png", "locks_xdoors2_bottom_"..i..".png"},
         paramtype = "light",
         paramtype2 = "facedir",
         drawtype = "nodebox",
