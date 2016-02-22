@@ -21,9 +21,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 --]]
 
--- Version 1.20
+-- Version 1.21
 
 -- Changelog: 
+-- 22.02.2016 * Fixed typos
 -- 08.05.2014 * Changed animation of shared locked furnace (removed pipeworks overlay on front, changed to new animation type)
 -- 10.01.2013 * Added command to toggle for pipeworks output
 --            * Added pipeworks support for chests and furnace.
@@ -99,7 +100,7 @@ function locks:get_lockdata( pos )
            owner         = (meta:get_string( "owner"    ) or ""),
            allowed_users = (meta:get_string( "allowed_users" ) or ""),
            password      = (meta:get_string( "password"      ) or ""),
-           pw_user       = (meta:get_string( "w_user"        ) or ""),
+           pw_user       = (meta:get_string( "pw_user"        ) or ""),
            formspec      = (meta:get_string( "formspec"      ) or "")
    };
 end
