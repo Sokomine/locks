@@ -24,6 +24,7 @@
 -- Version 1.20
 
 -- Changelog: 
+-- 25.02.2016 * Added new Locks config Formspec.
 -- 08.05.2014 * Changed animation of shared locked furnace (removed pipeworks overlay on front, changed to new animation type)
 -- 10.01.2013 * Added command to toggle for pipeworks output
 --            * Added pipeworks support for chests and furnace.
@@ -40,6 +41,102 @@ locks = {};
 minetest.register_privilege("openlocks", { description = "allows to open/use all locked objects", give_to_singleplayer = false});
 minetest.register_privilege("diglocks",  { description = "allows to open/use and dig up all locked objects", give_to_singleplayer = false});
 
+locks.config_button = [[
+	image_button[%d,%d;1,1;locks_lock16.png;locks_config;Config
+Locks]
+	tooltip[locks_config;Configure the players or set the password to grant access to other players.]
+]]
+function locks.get_config_button(x,y)
+return locks.config_button:format((x or 0), (y or 0))
+end
+
+locks.authorize_button = [[
+	image_button[%d,%d;1,1;locks_key16.png;locks_authorize;Autho-
+rize]
+	tooltip[locks_authorize;Opens a password prompt to grant you access to this object.]
+]]
+function locks.get_authorize_button(x,y)
+return locks.authorize_button:format((x or 1), (y or 0))
+end
+
+locks.password_prompt = [[
+	size[6,3;]
+	pwdfield[0.5,1;5.5,0;password;Enter password:]
+	tooltip[password;Opens a password prompt to grant you access to this object.]
+	
+	box[0.1,1.5;5.5,0.05;#FFFFFF]
+	button[1.5,2;3,1;proceed;Proceed]
+]]
+function locks.prompt_password(playername, formname)
+local fs = locks.password_prompt;
+			minetest.show_formspec(playername, formname, fs);
+end
+
+function locks.access_denied(playername, formname, ask_for_pw)
+	local fs = [[
+	size[6,3;]
+	label[0.5,1;Access denied]
+	
+	box[0.1,1.5;5.5,0.05;#FFFFFF]
+	button_exit[4,2;2,1;cancel;Cancel]
+]];
+	if ask_for_pw == true then
+		fs = fs.."button[0,2;3.5,1;enter_password;Enter Password]";
+	end
+	minetest.show_formspec(playername, formname, fs);
+end
+
+locks.access_granted = [[
+	size[6,3;]
+	label[0.5,1;Access granted]
+	
+	box[0.1,1.5;5.5,0.05;#FFFFFF]
+	button_exit[1.5,2;3,1;proceed;Proceed]
+]]
+
+locks.config_formspec = [[
+	size[12,9;]
+	
+	image[0,0;0.7,0.7;locks_lock32.png] label[0.7,0;Locks configuration panel]
+	box[0.1,0.6;11.5,0.05;#FFFFFF]
+
+	label[0.1,0.7;Owner: %q]
+	
+	checkbox[0.1,1;pipeworks;Enable Pipeworks;%s]
+	tooltip[pipeworks;Tubes from pipeworks may be used to extract items out of/add items to this shared locked object.]
+	
+	textarea[0.4,2;6.5,4;allowed_users;Allowed Players:;%s]
+	label[6.5,2;Insert the Playernames here,
+that should have access to this Object.
+One Player per line]
+	tooltip[allowed_users;Insert the Playernames here,
+that should have access to this Object.
+One Player per line]
+
+	pwdfield[0.4,6.5;4.5,0;password;Password:]	button[4.5,6.2;2,0;save_pw;Set PW]
+	tooltip[password;Every player with this password can access this object]
+	label[6.5,5.5;Specify a password here.
+Every Player with this password can access this object.
+Set an empty Password to remove the Password]
+	
+	box[0.1,8.5;11.5,0.05;#FFFFFF]
+	button_exit[4,9;2,0;ok;OK]		button_exit[6,9;2,0;cancel;Cancel]	
+]]
+locks.uniform_background = "";
+
+if default and default.gui_bg then 
+	locks.uniform_background = locks.uniform_background..default.gui_bg;
+end
+
+if default and default.gui_bg_img then 
+	locks.uniform_background = locks.uniform_background..default.gui_bg_img;
+end
+
+if default and default.gui_slots then 
+	locks.uniform_background = locks.uniform_background..default.gui_slots;
+end
+
+locks.config_formspec = locks.config_formspec..locks.uniform_background
 
 locks.pipeworks_enabled = false;
 
@@ -78,7 +175,9 @@ function locks:lock_init( pos, default_formspec )
    -- the last player who entered the right password (to save space this is not a list)
    meta:set_string("pw_user","");
    -- this formspec is presented on right-click for every user
-   meta:set_string("formspec",        default_formspec);
+   meta:set_string("formspec",			default_formspec..
+										locks.get_authorize_button(6,0)..
+										locks.get_config_button(7,0));
    -- by default, do not send output to pipework tubes
    meta:set_int(   "allow_pipeworks", 0 );
 end
@@ -306,7 +405,35 @@ function locks:lock_handle_input( pos, formname, fields, player )
       print( "Error: [locks] lock_handle_input: unable to get meta data");
       return;
    end
-
+    local name = player:get_player_name();
+	  
+	--first check for locks_config_button
+   	if fields.locks_config then 
+		local allow_pipeworks = "false";
+		if meta:get_int( 'allow_pipeworks' ) == 1 then 
+			allow_pipeworks = "true";
+		end
+		local data = locks:get_lockdata( pos );
+		local fs = locks.config_formspec:format(data.owner,
+										allow_pipeworks,
+										data.allowed_users:gsub(",","\n"));
+		minetest.show_formspec(player:get_player_name(), "locks_config:"..minetest.pos_to_string(pos), fs);
+		return true; -- we could full handle the input. No need to continue. so we return true
+	elseif fields.locks_authorize then 
+		local data = locks:get_lockdata( pos );
+		
+		if name == data.owner then
+			minetest.chat_send_player(name, "You are the owner of this object. Its not required to enter a password.",false)
+		elseif minetest.string_to_privs(meta:get_string("allowed_users"))[name] then
+			minetest.chat_send_player(name, "You are already authorized in the whitelist. Its not required to enter a password.",false)
+		else
+			
+			local fs = locks.password_prompt;
+			minetest.show_formspec(name, "locks_authorize:"..minetest.pos_to_string(pos), fs);
+		end
+		return true;
+	end
+	
    -- is this input the lock is supposed to handle?
    if(  ( not( fields.locks_sent_lock_command )
        or fields.locks_sent_lock_command == "" )
@@ -315,7 +442,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
      return;
    end
 
-   name = player:get_player_name();
+
 
    if( fields.locks_sent_lock_command == "/help" ) then
 
@@ -554,7 +681,51 @@ function locks:lock_handle_input( pos, formname, fields, player )
    minetest.chat_send_player(name, "Error: Command \""..tostring(help[1]).."\" not understood.");
 end
 
-
+--this is required to handle the locks control panel
+minetest.register_on_player_receive_fields(function(player, formname, fields)
+	local playername = player:get_player_name();
+	if formname:find("locks_config:") then -- search if formname contains locks
+		--minetest.chat_send_player(playername,dump(fields));
+		local pos = minetest.string_to_pos(formname:gsub("locks_config:",""))
+		if fields.ok then			
+			local data = locks:get_lockdata( pos )
+			data.allowed_users = fields.allowed_users:gsub("\n",",");
+			--data.password = fields.password;
+			locks:set_lockdata( pos, data )
+			--print("Player "..player:get_player_name().." submitted fields "..dump(fields))
+		elseif fields.save_pw then
+			local data = locks:get_lockdata( pos )
+			data.password = fields.password;
+			locks:set_lockdata( pos, data );
+		elseif fields.pipeworks then
+			local meta = minetest.get_meta(pos);
+			if fields.pipeworks == "true" then
+				meta:set_int( 'allow_pipeworks', 1 );
+			else 
+				meta:set_int( 'allow_pipeworks', 0 );
+			end
+		end
+		return true; --everything handled good :)
+		
+	elseif formname:find("locks_authorize:") then
+		if fields.password and fields.password ~="" then
+			local pos = minetest.string_to_pos(formname:gsub("locks_authorize:",""))
+			local meta = minetest.get_meta(pos);
+			if meta:get_string("password")==fields.password then
+				locks.access_granted(playername, formname);
+				meta:set_string("pw_user", playername)
+			else 
+				locks.access_denied(playername, formname, true);
+				
+			end
+		elseif fields.enter_password then --if the user clicks the "Enter Password" button in the "access denied" formspec
+			locks.prompt_password(playername, formname);
+		end
+		
+		return true --evrything is great :)
+	end
+	return false;
+end)
 
 -- craftitem; that can be used to craft shared locked objects
 minetest.register_craftitem("locks:lock", {

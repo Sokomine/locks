@@ -2,6 +2,7 @@
 -- modified by Sokomine to allow locked doors that can only be opened/closed/dig up by the player who placed them
 -- a little bit modified by addi to allow someone with the priv "opendoors" to open/close/dig all locked doors. 
 -- Sokomine: modified again so that it uses the new locks-mod
+-- 25.02.16 Added new Locks config Buttons.
 
 local door_bottom = {-0.5, -0.5, -0.5, 0.5, 0.5, -0.4}
 local door_top = {
@@ -77,8 +78,8 @@ for i = 1, 2 do
         on_construct = function(pos)
                 locks:lock_init( pos,
                                "size[8,2]"..
-                               "field[0.3,0.6;6,0.7;locks_sent_lock_command;Locked door. Type /help for help:;]"..
-                               "button_exit[6.3,1.2;1.7,0.7;locks_sent_input;Proceed]" );
+							   locks.uniform_background..
+                               "button_exit[6.3,1.2;1.7,1;locks_sent_input;Proceed]" );
         end,
 
         on_receive_fields = function(pos, formname, fields, sender)
@@ -110,8 +111,8 @@ for i = 1, 2 do
         on_construct = function(pos)
                 locks:lock_init( pos,
                                "size[8,2]"..
-                               "field[0.3,0.6;6,0.7;locks_sent_lock_command;Locked door. Type /help for help:;]"..
-                               "button_exit[6.3,0.2;1.7,0.7;locks_sent_input;Proceed]" );
+							   locks.uniform_background..
+                               "button_exit[6.3,1.2;1.7,1;locks_sent_input;Proceed]" );
         end,
 
         on_receive_fields = function(pos, formname, fields, sender)
