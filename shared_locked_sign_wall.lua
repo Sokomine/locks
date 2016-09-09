@@ -5,9 +5,9 @@
 minetest.register_node("locks:shared_locked_sign_wall", {
         description = "Shared locked sign",
         drawtype = "signlike",
-        tiles = {"default_sign_wall.png"},
-        inventory_image = "default_sign_wall.png",
-        wield_image = "default_sign_wall.png",
+        tiles = {"locks_lock16.png^default_sign_wood.png"},
+        inventory_image = "locks_lock16.png^default_sign_wood.png",
+        wield_image = "locks_lock16.png^default_sign_wood.png",
         paramtype = "light",
         paramtype2 = "wallmounted",
         sunlight_propagates = true,
@@ -29,8 +29,8 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                                 "size[8,4]"..
                                 "field[0.3,0.6;6,0.7;text;Text:;${text}]"..
                                 "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
-                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]"..
-								"background[-0.5,-0.5;9,5;bg_shared_locked_sign.jpg]" );
+                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]");
+--								"background[-0.5,-0.5;9,5;bg_shared_locked_sign.jpg]" );
         end,
 
         after_place_node = function(pos, placer)
