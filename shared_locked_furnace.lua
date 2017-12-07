@@ -86,10 +86,10 @@ end
 function locks.get_furnace_active_formspec(pos, percent)
 	local formspec =
 		"size[8,9]"..
-		"image[2,2;1,1;default_furnace_fire_bg.png^[lowpart:"..
+		"image[2,1.5;1,1;default_furnace_fire_bg.png^[lowpart:"..
 		(100-percent)..":default_furnace_fire_fg.png]"..
-		"list[current_name;fuel;2,3;1,1;]"..
-		"list[current_name;src;2,1;1,1;]"..
+		"list[current_name;fuel;2,2.5;1,1;]"..
+		"list[current_name;src;2,0.5;1,1;]"..
 		"list[current_name;dst;5,1;2,2;]"..
 		"list[current_player;main;0,5;8,4;]"..
 		"background[-0.5,-0.65;9,10.35;bg_shared_locked_furnace.jpg]"..
@@ -101,9 +101,9 @@ end
 
 locks.furnace_inactive_formspec =
 	"size[8,9]"..
-	"image[2,2;1,1;default_furnace_fire_bg.png]"..
-	"list[current_name;fuel;2,3;1,1;]"..
-	"list[current_name;src;2,1;1,1;]"..
+	"image[2,1.5;1,1;default_furnace_fire_bg.png]"..
+	"list[current_name;fuel;2,2.5;1,1;]"..
+	"list[current_name;src;2,0.5;1,1;]"..
 	"list[current_name;dst;5,1;2,2;]"..
 	"list[current_player;main;0,5;8,4;]"..
 	"background[-0.5,-0.65;9,10.35;bg_shared_locked_furnace.jpg]"..
