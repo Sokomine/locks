@@ -142,12 +142,14 @@ minetest.register_node("locks:door", {
     sunlight_propogates = true,
     on_place = function(itemstack, placer, pointed_thing)
         local above = pointed_thing.above
-        if minetest.is_protected(above, placer:get_player_name()) then
+	local above1 = {x = above.x, y = above.y + 1, z = above.z};
+        if (minetest.is_protected(above,  placer:get_player_name())
+         or minetest.is_protected(above1, placer:get_player_name())) then
 	    minetest.chat_send_player(placer:get_player_name(), "This area is protected!")
 	    return itemstack
 	else
             -- there should be 2 empty nodes
-            if minetest.env:get_node({x = above.x, y = above.y + 1, z = above.z}).name ~= "air" then
+            if minetest.env:get_node(above1).name ~= "air" then
                 return itemstack
             end
         
