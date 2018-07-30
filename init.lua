@@ -21,6 +21,7 @@
 -- Version 2.00
 
 -- Changelog:
+-- 30.07.2018 * Front side of chest does not get pipeworks image anymore.
 -- 30.07.2018 * Fixed bug with pipeworks.
 --            * Repaired password.
 --            * Converted back to unix file format.
