@@ -3,6 +3,7 @@
 -- containing only the furnace and adopted slightly for my locks mod
 
 
+-- 25.02.16 Added new Locks config Buttons.
 -- 09.01.13 Added support for pipeworks.
 
 
@@ -92,10 +93,10 @@ function locks.get_furnace_active_formspec(pos, percent)
 		"list[current_name;src;2,0.5;1,1;]"..
 		"list[current_name;dst;5,1;2,2;]"..
 		"list[current_player;main;0,5;8,4;]"..
-		"background[-0.5,-0.65;9,10.35;bg_shared_locked_furnace.jpg]"..
-
-                                "field[0.3,4.5;6,0.7;locks_sent_lock_command;Locked furnace. Type /help for help:;]"..
-                                "button_exit[6.3,4;1.7,0.7;locks_sent_input;Proceed]" ;
+		locks.uniform_background..
+		locks.get_authorize_button(6,0)..
+		locks.get_config_button(7,0)
+		
 	return formspec
 end
 
@@ -106,9 +107,9 @@ locks.furnace_inactive_formspec =
 	"list[current_name;src;2,0.5;1,1;]"..
 	"list[current_name;dst;5,1;2,2;]"..
 	"list[current_player;main;0,5;8,4;]"..
-	"background[-0.5,-0.65;9,10.35;bg_shared_locked_furnace.jpg]"..
-                                "field[0.3,4.5;6,0.7;locks_sent_lock_command;Locked furnace. Type /help for help:;]"..
-                                "button_exit[6.3,4;1.7,0.7;locks_sent_input;Proceed]" ;
+	locks.uniform_background..
+	locks.get_authorize_button(6,0)..
+	locks.get_config_button(7,0)
 
 minetest.register_node("locks:shared_locked_furnace", {
 	description = "Shared locked furnace",
