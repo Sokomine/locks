@@ -3,7 +3,7 @@
 
 locks.chest_add = {};
 locks.chest_add.tiles  = {"default_chest_top.png", "default_chest_top.png", "default_chest_side.png",
-                "default_chest_side.png", "default_chest_side.png", "default_chest_front.png"};
+                "default_chest_side.png", "default_chest_side.png", "default_chest_front.png^locks_lock16.png"};
 locks.chest_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2};
 locks.chest_add.tube   = {};
 
@@ -16,7 +16,7 @@ if( locks.pipeworks_enabled ) then
 	"default_chest_side.png^pipeworks_tube_connection_wooden.png",
 	"default_chest_side.png^pipeworks_tube_connection_wooden.png",
 	"default_chest_side.png^pipeworks_tube_connection_wooden.png",
-	"default_chest_front.png"};
+	"default_chest_front.png^locks_lock16.png"};
    locks.chest_add.groups = {snappy=2,choppy=2,oddly_breakable_by_hand=2,
 	tubedevice = 1, tubedevice_receiver = 1 };
    locks.chest_add.tube = {

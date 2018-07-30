@@ -22,6 +22,7 @@
 
 -- Changelog:
 -- 30.07.2018 * Front side of chest does not get pipeworks image anymore.
+--              Instead it always shows the locks texture as overlay.
 -- 30.07.2018 * Fixed bug with pipeworks.
 --            * Repaired password.
 --            * Converted back to unix file format.
