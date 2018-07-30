@@ -212,8 +212,8 @@ function locks:lock_allow_use( pos, player )
    local meta = minetest.env:get_meta(pos);
 
    -- pipeworks sends a special username
-   if( name == ':pipeworks' or (player.is_fake_player and player.is_fake_player==":pipeworks")) then
-      if( meta:get_int( 'allow_pipeworks' ) == 1 ) then
+   if( player.is_fake_player) then
+      if( locks:lock_allow_dig( pos, player ) and meta:get_int( 'allow_pipeworks' ) == 1 ) then
          return true;
       else
          return false;
@@ -356,8 +356,11 @@ function locks:lock_handle_input( pos, formname, fields, player )
    end
    
 
+   local password = meta:get_string("password");
    -- other players can only try to input the correct password
-   if( name ~= meta:get_string( "owner" )) then 
+   if( name ~= meta:get_string( "owner" )
+       or (password and password ~= "" and password==fields.locks_sent_lock_command)
+       or (name==meta:get_string("pw_user"))) then 
 
       -- no need to bother with trying other PWs if none is set...
       if( meta:get_string("password")=="" ) then
