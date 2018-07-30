@@ -21,12 +21,12 @@ if( locks.pipeworks_enabled ) then
 	tubedevice = 1, tubedevice_receiver = 1 };
    locks.chest_add.tube = {
 		insert_object = function(pos, node, stack, direction)
-			local meta = minetest.env:get_meta(pos)
+			local meta = minetest.get_meta(pos)
 			local inv = meta:get_inventory()
 			return inv:add_item("main", stack)
 		end,
 		can_insert = function(pos, node, stack, direction)
-			local meta = minetest.env:get_meta(pos)
+			local meta = minetest.get_meta(pos)
 			local inv = meta:get_inventory()
 			return inv:room_for_item("main", stack)
 		end,
@@ -45,7 +45,7 @@ minetest.register_node("locks:shared_locked_chest", {
         legacy_facedir_simple = true,
 
         on_construct = function(pos)
-                local meta = minetest.env:get_meta(pos)
+                local meta = minetest.get_meta(pos)
                 -- prepare the lock of the chest
                 locks:lock_init( pos, 
                                 "size[8,10]"..
@@ -78,7 +78,7 @@ minetest.register_node("locks:shared_locked_chest", {
                 if( not(locks:lock_allow_dig( pos, player ))) then
                    return false;
                 end
-                local meta = minetest.env:get_meta(pos);
+                local meta = minetest.get_meta(pos);
                 local inv = meta:get_inventory()
                 return inv:is_empty("main")
         end,

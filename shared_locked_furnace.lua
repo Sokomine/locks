@@ -60,7 +60,7 @@ if( locks.pipeworks_enabled ) then
 	tubedevice = 1, tubedevice_receiver = 1 };
    locks.furnace_add.tube = {
 		insert_object = function(pos, node, stack, direction)
-			local meta = minetest.env:get_meta(pos)
+			local meta = minetest.get_meta(pos)
 			local inv = meta:get_inventory()
 			if direction.y == 1 then
 				return inv:add_item("fuel",stack)
@@ -69,7 +69,7 @@ if( locks.pipeworks_enabled ) then
 			end
 		end,
 		can_insert = function(pos, node, stack, direction)
-			local meta = minetest.env:get_meta(pos)
+			local meta = minetest.get_meta(pos)
 			local inv = meta:get_inventory()
 			if direction.y == 1 then
 				return inv:room_for_item("fuel", stack)

@@ -21,6 +21,7 @@
 -- Version 2.00
 
 -- Changelog:
+-- 30.07.2018 * Removed deprecated minetest.env usage.
 -- 30.07.2018 * Front side of chest does not get pipeworks image anymore.
 --              Instead it always shows the locks texture as overlay.
 -- 30.07.2018 * Fixed bug with pipeworks.
@@ -63,7 +64,7 @@ function locks:lock_init( pos, default_formspec )
       return;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    if( meta == nil ) then
       print( "Error: [locks] lock_init: unable to get meta data");
       return;
@@ -92,7 +93,7 @@ function locks:get_lockdata( pos )
       return;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    if( meta == nil) then
       return;
    end
@@ -113,7 +114,7 @@ function locks:set_lockdata( pos, data )
       return;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    if( meta == nil) then
       return;
    end
@@ -141,7 +142,7 @@ function locks:lock_set_owner( pos, player_or_name, description )
       return false;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    if( meta == nil ) then
       print( "Error: [locks] lock_set_owner: unable to get meta data");
       return;
@@ -171,7 +172,7 @@ function locks:lock_allow_dig( pos, player )
       return false;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    local lock_owner = meta:get_string("owner");
 
    -- locks who lost their owner can be opened/digged by anyone
@@ -211,7 +212,7 @@ function locks:lock_allow_use( pos, player )
    end
 
    local name = player:get_player_name();
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
 
    -- pipeworks sends a special username
    if( player.is_fake_player) then
@@ -303,7 +304,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
       return false;
    end
 
-   local meta = minetest.env:get_meta(pos);
+   local meta = minetest.get_meta(pos);
    if( meta == nil ) then
       print( "Error: [locks] lock_handle_input: unable to get meta data");
       return;

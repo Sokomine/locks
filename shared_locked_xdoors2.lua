@@ -40,8 +40,8 @@ local xdoors2_transform = function(pos, node, puncher)
     end
 	
     local olddata = locks:get_lockdata( pos );
-    minetest.env:add_node(pos, {name = "locks:door_bottom_"..t, param2 = p2})
-    minetest.env:add_node({x = pos.x, y = pos.y + 1, z = pos.z}, {name = "locks:door_top_"..t, param2 = p2})
+    minetest.add_node(pos, {name = "locks:door_bottom_"..t, param2 = p2})
+    minetest.add_node({x = pos.x, y = pos.y + 1, z = pos.z}, {name = "locks:door_top_"..t, param2 = p2})
 
     -- remember who owns the door, what passwords are set etc.
     locks:set_lockdata( pos, olddata );
@@ -53,8 +53,8 @@ local xdoors2_destruct = function(pos, oldnode)
     if is_top(oldnode.name) then
         pos = {x = pos.x, y = pos.y - 1, z = pos.z}
     end
-    minetest.env:remove_node(pos)
-    minetest.env:remove_node({x = pos.x, y = pos.y + 1, z = pos.z})
+    minetest.remove_node(pos)
+    minetest.remove_node({x = pos.x, y = pos.y + 1, z = pos.z})
 end
 
 for i = 1, 2 do
@@ -149,7 +149,7 @@ minetest.register_node("locks:door", {
 	    return itemstack
 	else
             -- there should be 2 empty nodes
-            if minetest.env:get_node(above1).name ~= "air" then
+            if minetest.get_node(above1).name ~= "air" then
                 return itemstack
             end
         
@@ -165,14 +165,14 @@ minetest.register_node("locks:door", {
             end
 
             local t = 1
-            local another_door = minetest.env:get_node({x = above.x + delta[fdir + 1].x, y = above.y, z = above.z + delta[fdir + 1].z})
+            local another_door = minetest.get_node({x = above.x + delta[fdir + 1].x, y = above.y, z = above.z + delta[fdir + 1].z})
             if (another_door.name:sub(-1) == "1" and another_door.param2 == fdir)
                 or (another_door.name:sub(-1) == "2" and another_door.param2 == (fdir + 1) % 4) then
                 t = 2
             end
 
-            minetest.env:add_node(above, {name = "locks:door_bottom_"..t, param2 = fdir})
-            minetest.env:add_node({x = above.x, y = above.y + 1, z = above.z}, {name = "locks:door_top_"..t, param2 = fdir})
+            minetest.add_node(above, {name = "locks:door_bottom_"..t, param2 = fdir})
+            minetest.add_node({x = above.x, y = above.y + 1, z = above.z}, {name = "locks:door_top_"..t, param2 = fdir})
 
             -- store who owns the door; the other data can be default for now
             locks:lock_set_owner( above, placer:get_player_name() or "", "Shared locked door");

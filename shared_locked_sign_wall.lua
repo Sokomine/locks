@@ -23,7 +23,7 @@ minetest.register_node("locks:shared_locked_sign_wall", {
 
 
         on_construct = function(pos)
-                local meta = minetest.env:get_meta(pos)
+                local meta = minetest.get_meta(pos)
                 -- prepare the lock of the sign
                 locks:lock_init( pos, 
                                 "size[8,4]"..
@@ -51,7 +51,7 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                     and locks:lock_allow_use( pos, sender )) then
 
                     --print("Sign at "..minetest.pos_to_string(pos).." got "..dump(fields))
-                    local meta = minetest.env:get_meta(pos)
+                    local meta = minetest.get_meta(pos)
                     fields.text = fields.text or "";
                     print((sender:get_player_name() or "").." wrote \""..fields.text..
                                 "\" to sign at "..minetest.pos_to_string(pos));
