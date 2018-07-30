@@ -1,4 +1,5 @@
 
+-- 25.02.16 Added new Locks config Buttons.
 -- allow aborting with ESC in newer Versions of MT again
 
 -- a sign
@@ -28,9 +29,10 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                 locks:lock_init( pos, 
                                 "size[8,4]"..
                                 "field[0.3,0.6;6,0.7;text;Text:;${text}]"..
-                                "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
-                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]");
+--                                "field[0.3,3.6;6,0.7;locks_sent_lock_command;Locked sign. Type /help for help:;]"..
 --								"background[-0.5,-0.5;9,5;bg_shared_locked_sign.jpg]" );
+                                "button_exit[6.3,3.2;1.7,0.7;locks_sent_input;Proceed]"..
+								locks.uniform_background );
         end,
 
         after_place_node = function(pos, placer)
@@ -44,10 +46,12 @@ minetest.register_node("locks:shared_locked_sign_wall", {
 
         on_receive_fields = function(pos, formname, fields, sender)
 	
-                -- if the user already has the right to use this and did input text
-                if(     fields.text 
-                    and ( not(fields.locks_sent_lock_command) 
-                           or fields.locks_sent_lock_command=="")
+                -- if locks can not  handle the input 
+				if not locks:lock_handle_input( pos, formname, fields, sender ) then
+					--then handle compatibility stuff or insert text
+					if(     fields.text 
+                    and ( not(fields.locks_sent_lock_command) --compatibility
+                           or fields.locks_sent_lock_command=="") --compatibility
                     and locks:lock_allow_use( pos, sender )) then
 
                     --print("Sign at "..minetest.pos_to_string(pos).." got "..dump(fields))
@@ -57,11 +61,8 @@ minetest.register_node("locks:shared_locked_sign_wall", {
                                 "\" to sign at "..minetest.pos_to_string(pos));
                     meta:set_string("text", fields.text);
                     meta:set_string("infotext", '"'..fields.text..'"'.." ["..sender:get_player_name().."]");
-
-                -- a command for the lock?
-                else
-                   locks:lock_handle_input( pos, formname, fields, sender );
-                end
+				end
+			end
   
         end,
  });

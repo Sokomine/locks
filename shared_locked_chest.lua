@@ -1,3 +1,4 @@
+-- 25.02.16 Added new Locks config Buttons.
 -- 09.01.13 Added support for pipeworks.
 
 
@@ -49,16 +50,24 @@ minetest.register_node("locks:shared_locked_chest", {
                 -- prepare the lock of the chest
                 locks:lock_init( pos, 
                                 "size[8,10]"..
---                                "field[0.5,0.2;8,1.0;locks_sent_lock_command;Locked chest. Type password, command or /help for help:;]"..
---                                "button_exit[3,0.8;2,1.0;locks_sent_input;Proceed]"..
-                                "list[current_name;main;0,0;8,4;]"..
-                                "list[current_player;main;0,5;8,4;]"..
-                                "field[0.3,9.6;6,0.7;locks_sent_lock_command;Locked chest. Type /help for help:;]"..
-								"background[-0.5,-0.65;9,11.2;bg_shared_locked_chest.jpg]"..
-                                "button_exit[6.3,9.2;1.7,0.7;locks_sent_input;Proceed]" );
---                                "size[8,9]"..
+----                                "field[0.5,0.2;8,1.0;locks_sent_lock_command;Locked chest. Type password, command or /help for help:;]"..
+----                                "button_exit[3,0.8;2,1.0;locks_sent_input;Proceed]"..
 --                                "list[current_name;main;0,0;8,4;]"..
---                                "list[current_player;main;0,5;8,4;]");
+--                                "list[current_player;main;0,5;8,4;]"..
+--                                "field[0.3,9.6;6,0.7;locks_sent_lock_command;Locked chest. Type /help for help:;]"..
+--								"background[-0.5,-0.65;9,11.2;bg_shared_locked_chest.jpg]"..
+--                                "button_exit[6.3,9.2;1.7,0.7;locks_sent_input;Proceed]" );
+----                                "size[8,9]"..
+----                                "list[current_name;main;0,0;8,4;]"..
+----                                "list[current_player;main;0,5;8,4;]");
+				locks.uniform_background ..
+				"list[current_name;main;0,1;8,4;]"..
+				"list[current_player;main;0,5.85;8,1;]" ..
+				"list[current_player;main;0,7.08;8,3;8]" ..
+				"listring[current_name;main]" ..
+				"listring[current_player;main]" ..
+				default.get_hotbar_bg(0,5.85) );
+
                 local inv = meta:get_inventory()
                 inv:set_size("main", 8*4)
         end,
