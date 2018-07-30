@@ -1,4 +1,4 @@
--- xDoors² mod by xyz
+-- xDoorsÂ² mod by xyz
 -- modified by Sokomine to allow locked doors that can only be opened/closed/dig up by the player who placed them
 -- a little bit modified by addi to allow someone with the priv "opendoors" to open/close/dig all locked doors. 
 -- Sokomine: modified again so that it uses the new locks-mod
@@ -33,8 +33,10 @@ local xdoors2_transform = function(pos, node, puncher)
     local p2 = 0
     if t == 2 then
         p2 = (node.param2 + 1) % 4
+	minetest.sound_play("doors_door_open", { pos = pos, gain = 0.3, max_hear_distance = 10})
     else
         p2 = (node.param2 + 3) % 4
+	minetest.sound_play("doors_door_close", { pos = pos, gain = 0.3, max_hear_distance = 10})
     end
 	
     local olddata = locks:get_lockdata( pos );
@@ -137,6 +139,7 @@ minetest.register_node("locks:door", {
     inventory_image = 'locks_xdoors2_door.png',
     wield_image = 'xdoors2_door.png',
     stack_max = 1,
+    sunlight_propogates = true,
     on_place = function(itemstack, placer, pointed_thing)
         local above = pointed_thing.above
 
