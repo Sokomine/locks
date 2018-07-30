@@ -142,38 +142,42 @@ minetest.register_node("locks:door", {
     sunlight_propogates = true,
     on_place = function(itemstack, placer, pointed_thing)
         local above = pointed_thing.above
-
-        -- there should be 2 empty nodes
-        if minetest.env:get_node({x = above.x, y = above.y + 1, z = above.z}).name ~= "air" then
-            return itemstack
-        end
+        if minetest.is_protected(above, placer:get_player_name()) then
+	    minetest.chat_send_player(placer:get_player_name(), "This area is protected!")
+	    return itemstack
+	else
+            -- there should be 2 empty nodes
+            if minetest.env:get_node({x = above.x, y = above.y + 1, z = above.z}).name ~= "air" then
+                return itemstack
+            end
         
-        local fdir = 0
-        local placer_pos = placer:getpos()
-        if placer_pos then
-            dir = {
-                x = above.x - placer_pos.x,
-                y = above.y - placer_pos.y,
-                z = above.z - placer_pos.z
-            }
-            fdir = minetest.dir_to_facedir(dir)
-        end
+            local fdir = 0
+            local placer_pos = placer:getpos()
+            if placer_pos then
+                dir = {
+                    x = above.x - placer_pos.x,
+                    y = above.y - placer_pos.y,
+                    z = above.z - placer_pos.z
+                }
+                fdir = minetest.dir_to_facedir(dir)
+            end
 
-        local t = 1
-        local another_door = minetest.env:get_node({x = above.x + delta[fdir + 1].x, y = above.y, z = above.z + delta[fdir + 1].z})
-        if (another_door.name:sub(-1) == "1" and another_door.param2 == fdir)
-            or (another_door.name:sub(-1) == "2" and another_door.param2 == (fdir + 1) % 4) then
-            t = 2
-        end
+            local t = 1
+            local another_door = minetest.env:get_node({x = above.x + delta[fdir + 1].x, y = above.y, z = above.z + delta[fdir + 1].z})
+            if (another_door.name:sub(-1) == "1" and another_door.param2 == fdir)
+                or (another_door.name:sub(-1) == "2" and another_door.param2 == (fdir + 1) % 4) then
+                t = 2
+            end
 
-        minetest.env:add_node(above, {name = "locks:door_bottom_"..t, param2 = fdir})
-        minetest.env:add_node({x = above.x, y = above.y + 1, z = above.z}, {name = "locks:door_top_"..t, param2 = fdir})
+            minetest.env:add_node(above, {name = "locks:door_bottom_"..t, param2 = fdir})
+            minetest.env:add_node({x = above.x, y = above.y + 1, z = above.z}, {name = "locks:door_top_"..t, param2 = fdir})
 
-        -- store who owns the door; the other data can be default for now
-        locks:lock_set_owner( above, placer:get_player_name() or "", "Shared locked door");
-        locks:lock_set_owner( {x = above.x, y = above.y + 1, z = above.z}, placer:get_player_name() or "", "Shared locked door");
+            -- store who owns the door; the other data can be default for now
+            locks:lock_set_owner( above, placer:get_player_name() or "", "Shared locked door");
+            locks:lock_set_owner( {x = above.x, y = above.y + 1, z = above.z}, placer:get_player_name() or "", "Shared locked door");
 
-        return ItemStack("")
+            return ItemStack("")
+	end
     end
 })
 
