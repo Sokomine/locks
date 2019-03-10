@@ -46,7 +46,7 @@ minetest.register_privilege("diglocks",  { description = "allows to open/use and
 
 
 locks.config_button = [[
-	image_button[%d,%d;1,1;locks_lock16.png;locks_config;Config
+	image_button[%s,%s;1,1;locks_lock16.png;locks_config;Config
 Locks]
 	tooltip[locks_config;Configure the players or set the password to grant access to other players.]
 ]]
@@ -56,7 +56,7 @@ function locks.get_config_button(x,y)
 end
 
 locks.authorize_button = [[
-	image_button[%d,%d;1,1;locks_key16.png;locks_authorize;Autho-
+	image_button[%s,%s;1,1;locks_key16.png;locks_authorize;Autho-
 rize]
 	tooltip[locks_authorize;Opens a password prompt to grant you access to this object.]
 ]]
