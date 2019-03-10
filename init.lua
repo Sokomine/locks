@@ -181,6 +181,7 @@ function locks:lock_init( pos, default_formspec )
    meta:set_string("allowed_users","");
    -- objects can be unlocked by passwords as well (if it is set)
    meta:set_string("password","");
+   meta:mark_as_private("password")
    -- the last player who entered the right password (to save space this is not a list)
    meta:set_string("pw_user","");
    -- this formspec is presented on right-click for every user
@@ -228,6 +229,7 @@ function locks:set_lockdata( pos, data )
    meta:set_string("owner",        (data.owner         or ""));
    meta:set_string("allowed_users",(data.allowed_users or ""));
    meta:set_string("password",     (data.password      or ""));
+   meta:mark_as_private("password")
    meta:set_string("pw_user",      (data.pw_user       or ""));
    meta:set_string("formspec",     (data.formspec      or ""));
 end
@@ -598,6 +600,7 @@ function locks:lock_handle_input( pos, formname, fields, player )
 
 
       meta:set_string( "password", help[2]);
+      meta:mark_as_private("password")
       -- reset the list of users who typed the right password
       meta:set_string("pw_users","");
 
