@@ -155,7 +155,7 @@ minetest.register_node("locks:door", {
             end
         
             local fdir = 0
-            local placer_pos = placer:getpos()
+            local placer_pos = placer:get_pos()
             if placer_pos then
                 dir = {
                     x = above.x - placer_pos.x,
